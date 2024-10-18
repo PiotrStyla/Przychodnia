@@ -1,0 +1,277 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+
+export default function Component() {
+  const [selectedSpecialist, setSelectedSpecialist] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [selectedTime, setSelectedTime] = useState("")
+  const [patientName, setPatientName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [adminNewSpecialist, setAdminNewSpecialist] = useState({ name: "", specialty: "", email: "" })
+  const [specialistProfiles, setSpecialistProfiles] = useState<Array<{ name: string; specialty: string; email: string }>>([])
+  const [loggedInSpecialist, setLoggedInSpecialist] = useState("")
+  const [specialistBio, setSpecialistBio] = useState("")
+  const [adminReservation, setAdminReservation] = useState({ patient: "", specialist: "", date: "", time: "" })
+
+  const specialists = [
+    "Dr. Anna Kowalska - Kardiolog",
+    "Dr. Jan Nowak - Ortopeda",
+    "Dr. Maria Wiśniewska - Neurolog",
+    "Dr. Piotr Zieliński - Dermatolog",
+    "Dr. Ewa Dąbrowska - Pediatra"
+  ]
+
+  const availableTimes = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00"]
+
+  const handleBooking = () => {
+    alert(`Zarezerwowano wizytę dla ${patientName} u ${selectedSpecialist} na ${selectedDate?.toLocaleDateString()} o ${selectedTime}\nEmail: ${email}\nTelefon: ${phone}`)
+  }
+
+  const handleAdminCreateSpecialist = () => {
+    setSpecialistProfiles([...specialistProfiles, adminNewSpecialist])
+    alert(`Administrator utworzył profil specjalisty: ${adminNewSpecialist.name} - ${adminNewSpecialist.specialty}`)
+    setAdminNewSpecialist({ name: "", specialty: "", email: "" })
+  }
+
+  const handleSpecialistLogin = (email: string) => {
+    const specialist = specialistProfiles.find(profile => profile.email === email)
+    if (specialist) {
+      setLoggedInSpecialist(specialist.name)
+      alert(`Zalogowano jako ${specialist.name}`)
+    } else {
+      alert("Nie znaleziono specjalisty o podanym adresie email")
+    }
+  }
+
+  const handleSpecialistUpdateProfile = () => {
+    alert(`Zaktualizowano profil specjalisty ${loggedInSpecialist}`)
+  }
+
+  const handleAdminReservation = () => {
+    alert(`Administrator utworzył rezerwację dla ${adminReservation.patient} u ${adminReservation.specialist} na ${adminReservation.date} o ${adminReservation.time}`)
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <Tabs defaultValue="patient">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="patient">Pacjent</TabsTrigger>
+          <TabsTrigger value="specialist">Specjalista</TabsTrigger>
+          <TabsTrigger value="admin">Administrator</TabsTrigger>
+        </TabsList>
+        <TabsContent value="patient">
+          <Card>
+            <CardHeader>
+              <CardTitle>Rezerwacja wizyty</CardTitle>
+              <CardDescription>Wybierz specjalistę, datę i godzinę wizyty</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="patientName">Imię i nazwisko</Label>
+                  <Input
+                    id="patientName"
+                    placeholder="Jan Kowalski"
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="specialist">Wybierz specjalistę</Label>
+                  <Select onValueChange={setSelectedSpecialist}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz specjalistę" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialists.map((specialist) => (
+                        <SelectItem key={specialist} value={specialist}>
+                          {specialist}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Wybierz datę</Label>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="time">Wybierz godzinę</Label>
+                  <Select onValueChange={setSelectedTime}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz godzinę" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTimes.map((time) => (
+                        <SelectItem key={time} value={time}>
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="email">Adres email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="twoj@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Numer telefonu</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="123 456 789"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleBooking}>Zarezerwuj wizytę</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="specialist">
+          <Card>
+            <CardHeader>
+              <CardTitle>Panel specjalisty</CardTitle>
+              <CardDescription>Zaloguj się i dostosuj swój profil</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {!loggedInSpecialist ? (
+                  <>
+                    <div>
+                      <Label htmlFor="specialistEmail">Email</Label>
+                      <Input
+                        id="specialistEmail"
+                        type="email"
+                        placeholder="twoj@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <Button onClick={() => handleSpecialistLogin(email)}>Zaloguj się</Button>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <Label htmlFor="specialistBio">Biografia</Label>
+                      <Textarea
+                        id="specialistBio"
+                        placeholder="Wprowadź swoją biografię"
+                        value={specialistBio}
+                        onChange={(e) => setSpecialistBio(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Ustaw godziny przyjęć</Label>
+                      <Calendar
+                        mode="multiple"
+                        className="rounded-md border"
+                      />
+                    </div>
+                    <Button onClick={handleSpecialistUpdateProfile}>Zaktualizuj profil</Button>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="admin">
+          <Card>
+            <CardHeader>
+              <CardTitle>Panel administratora</CardTitle>
+              <CardDescription>Zarządzaj specjalistami i rezerwacjami</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Utwórz profil specjalisty</h3>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Imię i nazwisko"
+                      value={adminNewSpecialist.name}
+                      onChange={(e) => setAdminNewSpecialist({ ...adminNewSpecialist, name: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Specjalizacja"
+                      value={adminNewSpecialist.specialty}
+                      onChange={(e) => setAdminNewSpecialist({ ...adminNewSpecialist, specialty: e.target.value })}
+                    />
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={adminNewSpecialist.email}
+                      onChange={(e) => setAdminNewSpecialist({ ...adminNewSpecialist, email: e.target.value })}
+                    />
+                    <Button onClick={handleAdminCreateSpecialist}>Utwórz profil specjalisty</Button>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Utwórz rezerwację</h3>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Pacjent"
+                      value={adminReservation.patient}
+                      onChange={(e) => setAdminReservation({ ...adminReservation, patient: e.target.value })}
+                    />
+                    <Select onValueChange={(value) => setAdminReservation({ ...adminReservation, specialist: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wybierz specjalistę" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {specialists.map((specialist) => (
+                          <SelectItem key={specialist} value={specialist}>
+                            {specialist}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="date"
+                      value={adminReservation.date}
+                      onChange={(e) => setAdminReservation({ ...adminReservation, date: e.target.value })}
+                    />
+                    <Select onValueChange={(value) => setAdminReservation({ ...adminReservation, time: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wybierz godzinę" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTimes.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleAdminReservation}>Utwórz rezerwację</Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
